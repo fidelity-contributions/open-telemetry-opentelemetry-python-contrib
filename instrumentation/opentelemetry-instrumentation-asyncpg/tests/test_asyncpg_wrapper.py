@@ -34,3 +34,19 @@ class TestAsyncPGInstrumentation(TestBase):
             self.assertFalse(
                 hasattr(method, "_opentelemetry_ext_asyncpg_applied")
             )
+
+    def test_no_op_tracer_provider(self):
+        AsyncPGInstrumentor().uninstrument()
+        AsyncPGInstrumentor().instrument(
+            tracer_provider=trace_api.NoOpTracerProvider()
+        )
+ 
+        async def run():
+            conn = await asyncpg.connect(user='user', password='password', database='database', host='127.0.0.1')
+            await conn.execute('SELECT 1')
+            await conn.close()
+ 
+        asyncio.run(run())
+ 
+        spans = self.memory_exporter.get_finished_spans()
+        self.assertEqual(len(spans), 0)     
