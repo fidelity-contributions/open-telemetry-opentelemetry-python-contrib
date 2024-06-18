@@ -268,7 +268,7 @@ class TestWrappedWithOtherFramework(InstrumentationTest, WsgiTestBase):
         PyramidInstrumentor().instrument()
         self.config = Configurator()
         self._common_initialization(self.config)
-
+    
     def tearDown(self) -> None:
         super().tearDown()
         with self.disable_logging():
@@ -299,6 +299,27 @@ class TestWrappedWithOtherFramework(InstrumentationTest, WsgiTestBase):
         OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_RESPONSE: "content-type,content-length,my-custom-header,invalid-header,my-custom-regex-header-.*,invalid-regex-header-.*,.*my-secret.*",
     },
 )
+class TestPyramidInstrumentor(InstrumentationTest, WsgiTestBase):
+    def setUp(self):
+        super().setUp()
+        self.config = Configurator()
+        self._common_initialization(self.config)
+
+    def tearDown(self) -> None:
+        super().tearDown()
+        with self.disable_logging():
+            PyramidInstrumentor().uninstrument()
+
+    def test_instrument_with_noop_tracer_provider(self):
+        tracer_provider = trace_api.NoOpTracerProvider()
+        PyramidInstrumentor().instrument(tracer_provider=tracer_provider)
+        # Add your assertions here to verify the instrumentation
+        # For example, you can check if the instrumentation was successful
+        self.assertTrue(PyramidInstrumentor().is_instrumented())
+        # Clean up the instrumentation
+        PyramidInstrumentor().uninstrument()
+        self.assertFalse(PyramidInstrumentor().is_instrumented())
+
 class TestCustomRequestResponseHeaders(InstrumentationTest, WsgiTestBase):
     def setUp(self):
         super().setUp()
