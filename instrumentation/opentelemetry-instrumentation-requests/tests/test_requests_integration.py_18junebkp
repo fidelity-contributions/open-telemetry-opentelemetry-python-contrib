@@ -11,18 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#import the realted modules
+
 import abc
 from unittest import mock
-import pytest
 
 import httpretty
 import requests
-from requests import get, post
 from requests.adapters import BaseAdapter
 from requests.models import Response
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import SimpleSpanProcessor, InMemorySpanExporter
 
 import opentelemetry.instrumentation.requests
 from opentelemetry import trace
@@ -417,40 +413,6 @@ class RequestsIntegrationTestBase(abc.ABC):
             self.assertEqual(result.text, "Hello!")
 
         self.assert_span(num_spans=0)
-    
-    # Setup OpenTelemetry instrumentation for requests
-    def setup_module(module):
-        trace.set_tracer_provider(TracerProvider())
-        span_exporter = InMemorySpanExporter()
-        span_processor = SimpleSpanProcessor(span_exporter)
-        trace.get_tracer_provider().add_span_processor(span_processor)
-        RequestsInstrumentor().instrument()
-    
-        module.span_exporter = span_exporter
-
-    # Test function for GET request
-    def test_requests_get():
-        get("http://httpbin.org/get")
-        spans = span_exporter.get_finished_spans()
-        assert len(spans) == 1
-        span = spans[0]
-        assert span.attributes["http.method"] == "GET"
-        assert "httpbin.org" in span.attributes["http.url"]
-        assert span.status.is_ok
-
-    # Test function for POST request
-    def test_requests_post():
-        post("http://httpbin.org/post", data={"key": "value"})
-        spans = span_exporter.get_finished_spans()
-        assert len(spans) == 2  # Assuming this is the second test and spans are not cleared
-        span = spans[1]  # Get the latest span
-        assert span.attributes["http.method"] == "POST"
-        assert "httpbin.org" in span.attributes["http.url"]
-        assert span.status.is_ok
-
-    # Cleanup function to uninstrument requests
-    def teardown_module(module):
-        RequestsInstrumentor().uninstrument()
 
     def test_not_recording(self):
         with mock.patch("opentelemetry.trace.INVALID_SPAN") as mock_span:
