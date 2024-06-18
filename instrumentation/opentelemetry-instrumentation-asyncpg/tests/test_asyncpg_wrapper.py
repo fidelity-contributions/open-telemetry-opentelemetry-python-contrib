@@ -34,7 +34,7 @@ class TestAsyncPGInstrumentation(TestBase):
             self.assertFalse(
                 hasattr(method, "_opentelemetry_ext_asyncpg_applied")
             )
-
+## Added the test case
     def test_no_op_tracer_provider(self):
         AsyncPGInstrumentor().uninstrument()
         AsyncPGInstrumentor().instrument(
