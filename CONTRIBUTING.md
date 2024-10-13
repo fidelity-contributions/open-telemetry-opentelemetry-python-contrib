@@ -237,6 +237,56 @@ CORE_REPO_SHA=c49ad57bfe35cfc69bfa863d74058ca9bec55fc3 tox
 
 The continuous integration overrides that environment variable with as per the configuration [here](https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/.github/workflows/test_0.yml#L14).
 
+
+## Debug Tests Locally
+While Tox is a great environment orchestrator tool, this project uses it to define how to set up and execute varied tasks, especially running test against multiple Python versions in isolation, it is convenient, but when contributors need debug their code(essentially necessary for complicated logic), Tox can hardly help.   Here briefly illustrate how this project orchestrates with Tox, then how to set up local environments for debugging the code within contributors' favorite IDEs. As this project includes dozens of modules, let's take opentelemetry-instrumentation-httpx as an example. Refer to [tox.ini](https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/tox.ini) for the details.
+
+* in the tox.ini, it defines the environment list accordingly for httpx instrumentation module.
+```
+  py3{8,9,10,11,12}-test-instrumentation-httpx-{0,1}
+  pypy3-test-instrumentation-httpx-{0,1}
+  lint-instrumentation-httpx
+```
+* then below for commands_pre,  they are used to install the dependencies from latest repo [opentelemetry-python](https://github.com/open-telemetry/opentelemetry-python.git)
+```
+  httpx: pip install opentelemetry-api@{env:CORE_REPO}\#egg=opentelemetry-api&subdirectory=opentelemetry-api
+  httpx: pip install opentelemetry-semantic-conventions@{env:CORE_REPO}\#egg=opentelemetry-semantic-conventions&subdirectory=opentelemetry-semantic-conventions
+  httpx: pip install opentelemetry-sdk@{env:CORE_REPO}\#egg=opentelemetry-sdk&subdirectory=opentelemetry-sdk
+  httpx: pip install opentelemetry-test-utils@{env:CORE_REPO}\#egg=opentelemetry-test-utils&subdirectory=tests/opentelemetry-test-utils
+  httpx-0: pip install -r {toxinidir}/instrumentation/opentelemetry-instrumentation-httpx/test-requirements-0.txt
+  httpx-1: pip install -r {toxinidir}/instrumentation/opentelemetry-instrumentation-httpx/test-requirements-1.txt
+  lint-instrumentation-httpx: pip install -r {toxinidir}/instrumentation/opentelemetry-instrumentation-httpx/test-requirements-1.txt
+```
+* finally, in under commands section, below defines final command when we run test/lint:
+```sh
+  tox -e py3{8,9,10,11,12}-test-instrumentation-httpx-{0,1}
+```
+or
+```sh
+  tox -e lint-instrumentation-httpx
+```
+```
+  test-instrumentation-httpx: pytest {toxinidir}/instrumentation/opentelemetry-instrumentation-httpx/tests {posargs}
+  lint-instrumentation-httpx: black --diff --check --config {toxinidir}/pyproject.toml {toxinidir}/instrumentation/opentelemetry-instrumentation-httpx
+  lint-instrumentation-httpx: isort --diff --check-only --settings-path {toxinidir}/.isort.cfg {toxinidir}/instrumentation/opentelemetry-instrumentation-httpx
+  lint-instrumentation-httpx: flake8 --config {toxinidir}/.flake8 {toxinidir}/instrumentation/opentelemetry-instrumentation-httpx
+  lint-instrumentation-httpx: sh -c "cd instrumentation && pylint --rcfile ../.pylintrc opentelemetry-instrumentation-httpx"
+```
+
+Based on the understanding of how tox is running corresponding tasks for different module, we can set up local debugging environment in our favorite IDEs.
+* Setup a separate python venv.
+* git clone [opentelemetry-python](https://github.com/open-telemetry/opentelemetry-python.git), you might choose different branch or tag.
+* Install the dependencies from opentelemetry-python repo.
+```sh
+pip install -e ./opentelemetry-api -e ./opentelemetry-sdk -e ./opentelemetry-semantic-conventions -e./tests/opentelemetry-test-utils
+```
+* Install 3rd party dependencies for the specific modules, here e.g. opentelemetry-instrumentation-httpx.
+  dependencies
+```sh
+ pip install -r {toxinidir}/instrumentation/opentelemetry-instrumentation-httpx/test-requirements-0.txt
+```
+* Since all dependencies is ready, enjoy debugging any specific test case in any IDE or [pdb](https://docs.python.org/3/library/pdb.html).
+
 ## Style Guide
 
 * docstrings should adhere to the [Google Python Style
