@@ -32,6 +32,7 @@ Please also read the [OpenTelemetry Contributor Guide](https://github.com/open-t
   * [Focus on Capabilities, Not Structure Compliance](#focus-on-capabilities-not-structure-compliance)
 * [Running Tests Locally](#running-tests-locally)
   * [Testing against a different Core repo branch/commit](#testing-against-a-different-core-repo-branchcommit)
+* [Debugging Tests Locally](#debugging-tests-locally)
 * [Style Guide](#style-guide)
 * [Guideline for instrumentations](#guideline-for-instrumentations)
 * [Expectations from contributors](#expectations-from-contributors)
@@ -238,7 +239,7 @@ CORE_REPO_SHA=c49ad57bfe35cfc69bfa863d74058ca9bec55fc3 tox
 The continuous integration overrides that environment variable with as per the configuration [here](https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/.github/workflows/test_0.yml#L14).
 
 
-## Debug Tests Locally
+## Debugging Tests Locally
 While Tox is a great environment orchestrator tool, this project uses it to define how to set up and execute varied tasks, especially running test against multiple Python versions in isolation, it is convenient, but when contributors need debug their code(essentially necessary for complicated logic), Tox can hardly help.   Here briefly illustrate how this project orchestrates with Tox, then how to set up local environments for debugging the code within contributors' favorite IDEs. As this project includes dozens of modules, let's take opentelemetry-instrumentation-httpx as an example. Refer to [tox.ini](https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/tox.ini) for the details.
 
 * in the tox.ini, it defines the environment list accordingly for httpx instrumentation module.
