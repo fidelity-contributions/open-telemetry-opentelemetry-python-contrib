@@ -240,7 +240,7 @@ The continuous integration overrides that environment variable with as per the c
 
 
 ## Debugging Tests Locally
-While Tox is a great environment orchestrator tool, this project uses it to define how to set up and execute varied tasks, especially running test against multiple Python versions in isolation, it is convenient, but when contributors need debug their code(essentially necessary for complicated logic), Tox can hardly help.   Here briefly illustrate how this project orchestrates with Tox, then how to set up local environments for debugging the code within contributors' favorite IDEs. As this project includes dozens of modules, let's take opentelemetry-instrumentation-httpx as an example. Refer to [tox.ini](https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/tox.ini) for the details.
+While Tox is a great environment orchestrator tool, this project uses it to define how to set up and execute varied tasks, especially running test against multiple Python versions in isolation, it is convenient, but when contributors need debug their code(essentially necessary for complicated logic), Tox can hardly help.   Here briefly illustrate how this project is orchestrated with Tox, then how to set up local environments for debugging the code within contributors' favorite IDEs. As this project includes dozens of modules, let's take opentelemetry-instrumentation-httpx as an example. Refer to [tox.ini](https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/tox.ini) for the details.
 
 * in the tox.ini, it defines the environment list accordingly for httpx instrumentation module.
 ```
@@ -248,7 +248,7 @@ While Tox is a great environment orchestrator tool, this project uses it to defi
   pypy3-test-instrumentation-httpx-{0,1}
   lint-instrumentation-httpx
 ```
-* then below for commands_pre,  they are used to install the dependencies from latest repo [opentelemetry-python](https://github.com/open-telemetry/opentelemetry-python.git)
+* then below is commands_pre,  which are used to install the dependencies from latest repo [opentelemetry-python](https://github.com/open-telemetry/opentelemetry-python.git) and 3rd party dependencies.
 ```
   httpx: pip install opentelemetry-api@{env:CORE_REPO}\#egg=opentelemetry-api&subdirectory=opentelemetry-api
   httpx: pip install opentelemetry-semantic-conventions@{env:CORE_REPO}\#egg=opentelemetry-semantic-conventions&subdirectory=opentelemetry-semantic-conventions
@@ -258,7 +258,7 @@ While Tox is a great environment orchestrator tool, this project uses it to defi
   httpx-1: pip install -r {toxinidir}/instrumentation/opentelemetry-instrumentation-httpx/test-requirements-1.txt
   lint-instrumentation-httpx: pip install -r {toxinidir}/instrumentation/opentelemetry-instrumentation-httpx/test-requirements-1.txt
 ```
-* finally, in under commands section, below defines final command when we run test/lint:
+* finally, under commands section, below defines final command when we run test/lint:
 ```sh
   tox -e py3{8,9,10,11,12}-test-instrumentation-httpx-{0,1}
 ```
@@ -274,7 +274,7 @@ or
   lint-instrumentation-httpx: sh -c "cd instrumentation && pylint --rcfile ../.pylintrc opentelemetry-instrumentation-httpx"
 ```
 
-Based on the understanding of how tox is running corresponding tasks for different module, we can set up local debugging environment in our favorite IDEs.
+Based on the understanding of how tox is running corresponding tasks for different module, we can set up local debugging environment in the favorite IDEs.
 * Setup a separate python venv.
 * git clone [opentelemetry-python](https://github.com/open-telemetry/opentelemetry-python.git), you might choose different branch or tag.
 * Install the dependencies from opentelemetry-python repo.
@@ -282,7 +282,6 @@ Based on the understanding of how tox is running corresponding tasks for differe
 pip install -e ./opentelemetry-api -e ./opentelemetry-sdk -e ./opentelemetry-semantic-conventions -e./tests/opentelemetry-test-utils
 ```
 * Install 3rd party dependencies for the specific modules, here e.g. opentelemetry-instrumentation-httpx.
-  dependencies
 ```sh
  pip install -r {toxinidir}/instrumentation/opentelemetry-instrumentation-httpx/test-requirements-0.txt
 ```
