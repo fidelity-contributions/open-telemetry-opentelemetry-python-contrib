@@ -4,7 +4,6 @@ certifi==2024.7.4
 charset-normalizer==3.3.2
 click==8.1.7
 Deprecated==1.2.14
-Flask==3.0.2
 http_server_mock==1.7
 idna==3.7
 iniconfig==2.0.0
