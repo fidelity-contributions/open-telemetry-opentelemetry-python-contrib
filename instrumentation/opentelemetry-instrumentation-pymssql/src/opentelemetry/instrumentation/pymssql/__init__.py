@@ -98,6 +98,11 @@ class _PyMSSQLConnectMethodArgsTuple(NamedTuple):
 
 
 class _PyMSSQLDatabaseApiIntegration(dbapi.DatabaseApiIntegration):
+    def __init__(self, request_hook=None, response_hook=None):
+        super().__init__()
+        self.request_hook = request_hook
+        self.response_hook = response_hook
+        
     def wrapped_connection(
         self,
         connect_method: Callable[..., Any],
@@ -143,7 +148,13 @@ class _PyMSSQLDatabaseApiIntegration(dbapi.DatabaseApiIntegration):
         if tds_version is not None:
             self.span_attributes["db.protocol.tds.version"] = tds_version
 
-        return dbapi.get_traced_connection_proxy(connection, self)
+        traced_connection = dbapi.get_traced_connection_proxy(connection, self)
+
+        # Attach hooks to the traced connection
+        traced_connection._request_hook = self.request_hook
+        traced_connection._response_hook = self.response_hook
+
+        return traced_connection
 
 
 class PyMSSQLInstrumentor(BaseInstrumentor):
@@ -155,6 +166,8 @@ class PyMSSQLInstrumentor(BaseInstrumentor):
         https://github.com/pymssql/pymssql/
         """
         tracer_provider = kwargs.get("tracer_provider")
+        request_hook = kwargs.get("request_hook")
+        response_hook = kwargs.get("response_hook")
 
         dbapi.wrap_connect(
             __name__,
@@ -166,7 +179,8 @@ class PyMSSQLInstrumentor(BaseInstrumentor):
             # pymssql does not keep the connection attributes in its connection object;
             # instead, we get the attributes from the connect method (which is done
             # via PyMSSQLDatabaseApiIntegration.wrapped_connection)
-            db_api_integration_factory=_PyMSSQLDatabaseApiIntegration,
+            db_api_integration_factory= _PyMSSQLDatabaseApiIntegration(
+                request_hook=request_hook, response_hook=response_hook),
         )
 
     def _uninstrument(self, **kwargs):
